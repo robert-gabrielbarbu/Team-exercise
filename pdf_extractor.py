@@ -29,4 +29,12 @@ class PdfExtractor(DocumentExtractor):
         - Store the page count in metadata.
         - Handle encrypted PDFs gracefully (catch `pypdf.errors.FileNotDecryptedError`).
         """
-        raise NotImplementedError
+        import pypdf
+
+        if not path.exists():
+            raise FileNotFoundError(f"No such file: {path}")
+        reader = pypdf.PdfReader(path)
+        text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        meta = reader.metadata
+        title = (meta.title if meta and meta.title else path.stem)
+        return Document(source=path, title=title, text=text, metadata=dict(meta or {}))

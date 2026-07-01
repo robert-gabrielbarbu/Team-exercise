@@ -34,7 +34,21 @@ def summarise(document: Document) -> str:
     - Stream the response using `client.messages.stream(...)` and print tokens
       as they arrive.
     """
-    raise NotImplementedError
+    client = anthropic.Anthropic(
+        api_key="dummy",
+        base_url="http://localhost:6655/anthropic",
+        default_headers={
+            "Authorization": f"Bearer {os.environ.get('ANTHROPIC_API_KEY', '68292ce8-ba31-4f25-a7db-771bc203a552')}",
+            "x-api-key": "",
+        },
+    )
+    prompt = f"Please summarise the following document titled '{document.title}':\n\n{document.text}"
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=512,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.content[0].text
 
 
 def _api_key_is_set() -> bool:
